@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Countdown</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&display=swap">
+    <style>
+        body {
+            font-family: 'VT323', monospace;
+            text-align: center;
+            background-color: #000022; /* Very dark blue background */
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: #007BFF;
+            font-size: 36px;
+            margin-top: 20px;
+        }
+        .countdown-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px auto;
+            max-width: 800px; /* Set a maximum width */
+        }
+        .countdown-box {
+            flex: 1;
+            text-align: center;
+            margin: 0 10px; /* Add margin for spacing */
+        }
+        .countdown {
+            font-size: 24px;
+            background: rgba(255, 255, 255, 0.2); /* Blurred glass background */
+            padding: 10px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px); /* Apply blur effect */
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); /* Glow effect with glass color */
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .progress-bar-container {
+            width: 100%;
+            text-align: center;
+        }
+        .progress-bar {
+            display: inline-block;
+            height: 10px;
+            width: 80%;
+            background-color: #ccc;
+            border-radius: 5px;
+            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.2); /* Blurred glass background for progress bar */
+            backdrop-filter: blur(10px); /* Apply blur effect to progress bar */
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0;
+            background-color: #007BFF; /* Blue fill color */
+            border-radius: 5px;
+            transition: width 1s linear;
+        }
+        /* Additional styling for May 22, 2024 countdown */
+        .may22-container {
+            margin-top: 40px;
+            width: 60%; /* Adjust the width as needed */
+            margin: 0 auto;
+        }
+        .may22-countdown {
+            font-size: 36px;
+        }
+        .may22-progress-bar {
+            width: 100%;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>School Countdown</h1>
+
+    <div class="countdown-container">
+        <div class="countdown-box">
+            <h2>Time Until Next Bell</h2>
+            <div class="countdown" id="nextBellCountdown"></div>
+            <div class="progress-bar-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="nextBellProgressBar"></div>
+                </div>
+            </div>
+        </div>
+        <div class="countdown-box">
+            <h2>Time Until End of Day</h2>
+            <div class="countdown" id="endOfDayCountdown"></div>
+            <div class="progress-bar-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="endOfDayProgressBar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="may22-container">
+        <h2>Days Until May 22, 2024</h2>
+        <div class="countdown may22-countdown" id="may22Countdown"></div>
+        <div class="progress-bar-container may22-progress-bar">
+            <div class="progress-bar">
+                <div class="progress-fill" id="may22ProgressBar"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Function to calculate time difference in seconds
+        function getTimeDifference(endTime) {
+            const now = new Date();
+            const diff = endTime - now;
+            return Math.max(0, Math.floor(diff / 1000));
+        }
+
+        // Function to display countdown
+        function updateCountdown(elementId, endTime, progressBarId) {
+            const countdownElement = document.getElementById(elementId);
+            const progressBarFill = document.getElementById(progressBarId);
+            const intervalId = setInterval(function () {
+                const remainingTime = getTimeDifference(endTime);
+
+                if (elementId === 'may22Countdown') {
+                    // Calculate days remaining
+                    const days = Math.floor(remainingTime / (3600 * 24));
+                    countdownElement.textContent = `${days} days`;
+                } else {
+                    const hours = Math.floor(remainingTime / 3600);
+                    const minutes = Math.floor((remainingTime % 3600) / 60);
+                    const seconds = remainingTime % 60;
+                    countdownElement.textContent = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+
+                if (remainingTime === 0) {
+                    clearInterval(intervalId);
+                }
+
+                // Calculate progress bar width based on time remaining
+                const totalDuration = getTimeDifference(endTime);
+                const timeElapsed = totalDuration - remainingTime;
+                const progressBarWidth = (timeElapsed / totalDuration) * 100;
+                progressBarFill.style.width = progressBarWidth + '%';
+            }, 1000);
+        }
+
+        // School schedule
+        const periods = [
+            { name: 'Home Room', startTime: '07:55', endTime: '08:03' },
+            { name: '1st Period', startTime: '08:06', endTime: '08:49' },
+            { name: '2nd Period', startTime: '08:52', endTime: '09:34' },
+            { name: '3rd Period', startTime: '09:37', endTime: '10:20' },
+            { name: '4th Period', startTime: '10:23', endTime: '11:08' },
+            { name: '5th Period', startTime: '11:11', endTime: '11:56' },
+            { name: 'Lunch', startTime: '11:57', endTime: '12:26' },
+            { name: '6th Period', startTime: '12:29', endTime: '13:12' },
+            { name: '7th Period', startTime: '13:15', endTime: '13:57' },
+            { name: '8th Period', startTime: '14:00', endTime: '14:45' }
+        ];
+
+        // Function to update the countdown based on the current period
+        function updatePeriodCountdown() {
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes(); // Convert current time to minutes
+
+            // Check if it's between 12:01 AM and 7:54 AM
+            if (currentTime >= 1 && currentTime <= 474) {
+                const start = new Date(now);
+                const end = new Date(now);
+                start.setHours(7, 54, 0, 0); // Set the start time to 7:54 AM
+                end.setHours(7, 55, 0, 0); // Set the end time to 7:55 AM
+
+                // Display countdown for this period
+                updateCountdown('nextBellCountdown', end, 'nextBellProgressBar');
+            } else {
+                // Loop through the regular periods
+                for (let i = 0; i < periods.length; i++) {
+                    const start = new Date(now);
+                    const end = new Date(now);
+                    start.setHours(Number(periods[i].startTime.split(':')[0]), Number(periods[i].startTime.split(':')[1]), 0, 0);
+                    end.setHours(Number(periods[i].endTime.split(':')[0]), Number(periods[i].endTime.split(':')[1]), 0, 0);
+
+                    if (now >= start && now <= end) {
+                        // Display countdown for the current period
+                        updateCountdown('nextBellCountdown', end, 'nextBellProgressBar');
+                        return;
+                    }
+                }
+
+                // If school is over for the day
+                document.getElementById('nextBellCountdown').textContent = 'School is over for today';
+                document.getElementById('nextBellProgressBar').style.width = '0%'; // Reset progress bar
+            }
+        }
+
+        // Function to update the countdown for the end of the school day
+        function updateEndOfDayCountdown() {
+            const now = new Date();
+            const endOfDay = new Date(now);
+            endOfDay.setHours(14, 45, 0, 0); // End of the school day is at 14:45
+
+            if (now <= endOfDay) {
+                // Display countdown for the end of the school day
+                updateCountdown('endOfDayCountdown', endOfDay, 'endOfDayProgressBar');
+            } else {
+                document.getElementById('endOfDayCountdown').textContent = 'School is over for today';
+                document.getElementById('endOfDayProgressBar').style.width = '0%'; // Reset progress bar
+            }
+        }
+
+        // Function to update the countdown for May 22, 2024
+        function updateMay22Countdown() {
+            const may22 = new Date('2024-05-22T00:00:00');
+            updateCountdown('may22Countdown', may22, 'may22ProgressBar');
+        }
+
+        // Initial update of countdowns
+        updatePeriodCountdown();
+        updateEndOfDayCountdown();
+        updateMay22Countdown();
+
+        // Update countdowns every second
+        setInterval(updatePeriodCountdown, 1000);
+        setInterval(updateEndOfDayCountdown, 1000);
+        setInterval(updateMay22Countdown, 1000);
+    </script>
+</body>
+</html>
